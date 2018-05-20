@@ -1,8 +1,8 @@
 #include "dialog.h"
 #include "ui_dialog.h"
 
-Dialog::Dialog(QWidget *parent) :
-    QDialog(parent),
+Dialog::Dialog(QWidget *this_parent) :
+    QDialog(this_parent),
     ui(new Ui::Dialog)
 {
     ui->setupUi(this);
@@ -83,14 +83,14 @@ Dialog::Dialog(QWidget *parent) :
     }
 
     //goal stretches
-    for(int x=60; x<=340; x+=offset)
-        fieldPos.push_back(QPointF(x,300));
-    for(int y=-110; y<=170; y+=offset)
-        fieldPos.push_back(QPointF(470,y));
-    for(int x=880; x>=600; x-=offset)
-        fieldPos.push_back(QPointF(x,300));
-    for(int y=710; y>=430; y-=offset)
-        fieldPos.push_back(QPointF(470,y));
+    for(int dx=60; dx<=340; dx+=offset)
+        fieldPos.push_back(QPointF(dx,300));
+    for(int dy=-110; dy<=170; dy+=offset)
+        fieldPos.push_back(QPointF(470,dy));
+    for(int dx=880; dx>=600; dx-=offset)
+        fieldPos.push_back(QPointF(dx,300));
+    for(int dy=710; dy>=430; dy-=offset)
+        fieldPos.push_back(QPointF(470,dy));
 
     QImage globe_img("../globe.png");//http://www.clker.com/clipart-world-black-and-white.html
     QImage star_img("../star.png");  //http://www.clker.com/clipart-2568.html
@@ -200,10 +200,10 @@ void Dialog::resizeEvent(QResizeEvent *){
     ui->graphicsView->fitInView(scene->itemsBoundingRect(),Qt::KeepAspectRatio);
 }
 
-void Dialog::get_winner(int color){
-    scene->addRect(0,500,1000,200,QPen(Qt::black,3,Qt::SolidLine,Qt::RoundCap, Qt::RoundJoin),QBrush(active_color));
-    QGraphicsSimpleTextItem * win = scene->addSimpleText(QString("Winner is found!"),QFont("Courier", 72, QFont::Bold, true));
-    win->setPos(50,550);
+void Dialog::get_winner() {
+//    scene->addRect(0,500,1000,200,QPen(Qt::black,3,Qt::SolidLine,Qt::RoundCap, Qt::RoundJoin),QBrush(active_color));
+//    QGraphicsSimpleTextItem * win = scene->addSimpleText(QString("Winner is found!"),QFont("Courier", 72, QFont::Bold, true));
+//    win->setPos(50,550);
 }
 
 void Dialog::get_color(int color){
@@ -231,14 +231,14 @@ void Dialog::get_dice_result(int dice){
     ui->graphicsView->repaint();
 }
 
-void Dialog::addHomeField(int x, int y,QBrush brush){
+void Dialog::addHomeField(int dx, int dy,QBrush brush){
     QBrush whiteBrush(Qt::white);
     QPen blackPen(Qt::black);
     blackPen.setWidth(1);
 
-    scene->addEllipse(x,y,180,180,blackPen,brush);
-    scene->addEllipse(x+65 ,y+15 ,50,50,blackPen,whiteBrush);
-    scene->addEllipse(x+65 ,y+115,50,50,blackPen,whiteBrush);
-    scene->addEllipse(x+15 ,y+65 ,50,50,blackPen,whiteBrush);
-    scene->addEllipse(x+115,y+65 ,50,50,blackPen,whiteBrush);
+    scene->addEllipse(dx,dy,180,180,blackPen,brush);
+    scene->addEllipse(dx+65 ,dy+15 ,50,50,blackPen,whiteBrush);
+    scene->addEllipse(dx+65 ,dy+115,50,50,blackPen,whiteBrush);
+    scene->addEllipse(dx+15 ,dy+65 ,50,50,blackPen,whiteBrush);
+    scene->addEllipse(dx+115,dy+65 ,50,50,blackPen,whiteBrush);
 }

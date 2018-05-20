@@ -1,20 +1,23 @@
 #include "game.h"
 #define DEBUG 0
 
-game::game(){
-    game_delay = 1000;
-    game_complete = false;
-    turn_complete = true;
-    for(int i = 0; i < 16; ++i){
-         player_positions.push_back(-1);
-    }
-    color = 3;
+game::game():
+    game_complete(false),
+    turn_complete(true),
+    game_delay(1000),
+    relative(),
+    dice_result(1),
+    rd(),
+    gen(rd()),
+    color(3),
+    player_positions({-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1})
+{
 }
 
 void game::reset(){
     game_complete = false;
     turn_complete = true;
-    for(auto i : player_positions){
+    for(auto &i : player_positions){ //without & we're changing the copy made in auto rather than the player_position
         i = -1;
     }
     color = 3;
@@ -40,12 +43,15 @@ int game::isStar(int index){
     return 0;
 }
 
-int game::isOccupied(int index){ //returns number of people
+int game::isOccupied(int index){ //returns number of people of another color
     int number_of_people = 0;
+
     if(index != 99){
-        for(auto i : player_positions){
-            if(i == index){
-                ++number_of_people;
+        for(size_t i = 0; i < player_positions.size(); ++i){
+            if(i < static_cast<size_t>(color)*4 || i >= static_cast<size_t>(color)*4 + 4){        //Disregard own players
+                if(player_positions[i] == index){
+                    ++number_of_people;
+                }
             }
         }
     }
@@ -53,15 +59,17 @@ int game::isOccupied(int index){ //returns number of people
 }
 
 bool game::isGlobe(int index){
-    if(index % 13 == 0 || (index - 8) % 13 == 0 || isOccupied(index) > 1){
-        return true;
+    if(index < 52){     //check only the indexes on the board, not in the home streak
+        if(index % 13 == 0 || (index - 8) % 13 == 0 || isOccupied(index) > 1){  //if more people of the same team stand on the same spot it counts as globe
+            return true;
+        }
     }
     return false;
 }
 
 void game::send_them_home(int index){
     for(size_t i = 0; i < player_positions.size(); ++i){
-        if(i < color*4 || i > color*4 + 4){ //different color
+        if(i < static_cast<size_t>(color)*4 || i >= static_cast<size_t>(color)*4 + 4){        //this way we don't skip one player position
             if(player_positions[i] == index){
                 player_positions[i] = -1;
             }
@@ -91,7 +99,7 @@ int game::next_turn(unsigned int delay = 0){
             color = 0;
             break;
     }
-    global_color = color;
+    // global_color = color;
     rollDice();
     relative.dice = getDiceRoll();
     relative.pos = relativePosition();
@@ -119,16 +127,25 @@ int game::next_turn(unsigned int delay = 0){
 }
 
 void game::movePiece(int relative_piece){
-    int fixed_piece = rel_to_fixed(relative_piece);
+    int fixed_piece = rel_to_fixed(relative_piece);     //index of the piece in player_positions
     int modifier = color * 13;
     int relative_pos = player_positions[fixed_piece];
     int target_pos = 0;
-    if(player_positions[fixed_piece] == -1){
+    if(player_positions[fixed_piece] == -1){        //if the selected piece is in the safe house, try to move it to start
         move_start(fixed_piece);
     } else {
         //convert to relative position
         if(relative_pos == 99){
             std::cout << "I tought this would be it ";
+        } else if(relative_pos == 51){ //if people land on 51, they shouldn't be sent to goal stretch
+            switch(color){
+            case 0 : relative_pos = 51; break;
+            case 1 : relative_pos = 38; break;
+            case 2 : relative_pos = 25; break;
+            case 3 : relative_pos = 12; break;
+            }
+        } else if( relative_pos > 50) {
+            relative_pos = relative_pos - color * 5 - 1;
         } else if(relative_pos < modifier) {
             relative_pos = relative_pos + 52 - modifier;
         } else if( relative_pos > 50) {
@@ -138,7 +155,7 @@ void game::movePiece(int relative_piece){
         }
         if(DEBUG) std::cout << "color: " << color << " pos: " << relative_pos << " + " << dice_result << " = " << relative_pos + dice_result;
         //add dice roll
-        relative_pos += dice_result;
+        relative_pos += dice_result;    //this is relative position of the selected token + the dice number
 
         int jump = isStar(relative_pos); //return 0 | 6 | 7
         if(jump){
@@ -150,17 +167,17 @@ void game::movePiece(int relative_piece){
         }
         //special case checks
         if(relative_pos > 56 && relative_pos < 72){ // go back
-            target_pos = 56-(relative_pos-56) + color * 5 + 1; //trust me
+            target_pos = 56-(relative_pos-56) + color * 5 + 1; //If the player moves over the goal, it should move backwards
         }else if(relative_pos == 56 || relative_pos >= 99){
             target_pos = 99;
         }else if(relative_pos > 50){ // goal stretch
             target_pos = relative_pos + color * 5 + 1;
         } else {
-            int new_pos = relative_pos + color * 13;
+            int new_pos = relative_pos + modifier;
             if(new_pos < 52){
                 target_pos = new_pos;
             } else { //wrap around
-                target_pos = new_pos - 52;
+                target_pos = new_pos - 52;  //this is the global position wrap around at the green entry point
             }
         }
         //check for game stuff
@@ -195,31 +212,31 @@ void game::movePiece(int relative_piece){
 }
 
 std::vector<int> game::relativePosition(){
-    std::vector<int> relative_positons;
+    std::vector<int> relative_positions;
     int modifier = color * 13;
 
     //from start id to end
-    for(int i = color*4; i < player_positions.size(); ++i){
-        relative_positons.push_back(player_positions[i]);
+    for(int i = color*4; i < static_cast<int>(player_positions.size()); ++i){
+        relative_positions.push_back(player_positions[i]);
     }
     //from 0 to start id
     for(int i = 0; i < color*4; ++i){
-        relative_positons.push_back(player_positions[i]);
+        relative_positions.push_back(player_positions[i]);
     }
 
 
-    for(size_t i = 0; i < relative_positons.size(); ++i){
-        if(relative_positons[i] == 99 || relative_positons[i] == -1){
-            relative_positons[i] = (relative_positons[i]);
-        } else if(relative_positons[i] < modifier) {
-            relative_positons[i] = (relative_positons[i]+52-modifier);
-        } else if(relative_positons[i] > 50) {
-            relative_positons[i] = (relative_positons[i]-color*5-1);
-        } else if(relative_positons[i] >= modifier) {
-            relative_positons[i] = (relative_positons[i]-modifier);
+    for(size_t i = 0; i < relative_positions.size(); ++i){
+        if(relative_positions[i] == 99 || relative_positions[i] == -1){
+            relative_positions[i] = (relative_positions[i]);
+        } else if(relative_positions[i] < modifier) {
+            relative_positions[i] = (relative_positions[i]+52-modifier);
+        } else if(relative_positions[i] > 50) {
+            relative_positions[i] = (relative_positions[i]-color*5-1);
+        } else if(relative_positions[i] >= modifier) {
+            relative_positions[i] = (relative_positions[i]-modifier);
         }
     }
-    return std::move(relative_positons);
+    return std::move(relative_positions);
 }
 
 void game::turnComplete(bool win){

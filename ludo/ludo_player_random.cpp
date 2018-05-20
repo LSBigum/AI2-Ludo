@@ -1,6 +1,12 @@
 #include "ludo_player_random.h"
 
-ludo_player_random::ludo_player_random(){
+ludo_player_random::ludo_player_random():
+    pos_start_of_turn(16),
+    pos_end_of_turn(16),
+    dice_roll(0),
+    rd(),
+    gen(rd())
+{
 }
 
 int ludo_player_random::make_decision(){
@@ -24,8 +30,6 @@ int ludo_player_random::make_decision(){
             }
         }
     }
-    std::random_device rd;
-    std::mt19937 gen(rd());
     std::uniform_int_distribution<> piece(0, valid_moves.size()-1);
     int select = piece(gen);
     return valid_moves[select];

@@ -10,7 +10,7 @@
 
 #include "positions_and_dice.h"
 
-static int global_color = 5;
+// static int global_color = 5;
 
 class game : public QThread
 {
@@ -21,6 +21,8 @@ private:
     unsigned int game_delay;
     positions_and_dice relative;
     int dice_result;
+    std::random_device rd;
+    std::mt19937 gen;
     std::vector<int> relativePosition();
     int isStar(int index);
     bool isGlobe(int index);
@@ -30,14 +32,14 @@ private:
     void move_start(int fixed_piece);
     int next_turn(unsigned int delay);
     static void msleep(unsigned long msecs){
-        QThread::msleep(msecs);
+        if(msecs > 0){
+            QThread::msleep(msecs);
+        }
     }
 public:
     int color;
     std::vector<int> player_positions;
     void rollDice(){
-        std::random_device rd;
-        std::mt19937 gen(rd());
         std::uniform_int_distribution<> dis(1, 6);
         dice_result = dis(gen);
     }

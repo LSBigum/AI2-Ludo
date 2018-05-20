@@ -10,6 +10,9 @@ private:
     std::vector<int> pos_start_of_turn;
     std::vector<int> pos_end_of_turn;
     int dice_roll;
+    std::random_device rd;
+    std::mt19937 gen;
+
     int make_decision();
 public:
     ludo_player_random();

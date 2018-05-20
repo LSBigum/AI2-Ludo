@@ -1,7 +1,11 @@
 #include "ludo_player.h"
 #include <random>
 
-ludo_player::ludo_player(){   
+ludo_player::ludo_player():
+    pos_start_of_turn(16),
+    pos_end_of_turn(16),
+    dice_roll(0)
+{
 }
 
 int ludo_player::make_decision(){

@@ -26,7 +26,7 @@ public:
 private:
     QColor active_color;
     int current_dice_roll;
-    void addHomeField(int,int,QBrush);
+    void addHomeField(int dx, int dy, QBrush);
     void showEvent(QShowEvent *);
     void resizeEvent(QResizeEvent *);
     Ui::Dialog *ui;
@@ -43,7 +43,8 @@ public slots:
     void update_graphics(std::vector<int> player_positions);
     void get_color(int color);
     void get_dice_result(int dice);
-    void get_winner(int color);
+    void get_winner(void);
+    // void get_winner(int color);
 };
 
 #endif // DIALOG_H
