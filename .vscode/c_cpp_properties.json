@@ -11,7 +11,9 @@
             "includePath": [
                 "${workspaceFolder}",
                 "/usr/include/qt4/QtCore",
-                "/usr/include/x86_64-linux-gnu/qt5"
+                "/usr/include/x86_64-linux-gnu/qt5",
+                "/usr/include/qt4",
+                "/usr/include/qt4/QtGui"
             ],
             "defines": [],
             "compilerPath": "/usr/bin/gcc",

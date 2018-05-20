@@ -34,3 +34,11 @@ build/
 
 # QT Generated Files
 *.user
+
+game\.cpp
+
+game\.h
+
+q_player\.cpp
+
+q_player\.hpp
