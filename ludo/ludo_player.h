@@ -19,6 +19,10 @@ private:
     int make_decision();
     bool fileExists(const std::string &filename);
     bool update;
+    void receiveReward();
+    std::vector<int> getActions();
+    bool isGlobe(int index);
+    int isOccupied(int index);
 public:
     ludo_player();
     // double acc_reward_player1;

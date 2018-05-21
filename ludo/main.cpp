@@ -54,7 +54,7 @@ int main(int argc, char *argv[]){
     QObject::connect(&p4,SIGNAL(turn_complete(bool)),              &g, SLOT(turnComplete(bool)));
 
     std::cout << "\n\n\n\n\n\n\n";
-    for(int i = 0; i < 40; ++i){ 
+    for(int i = 0; i < 100; ++i){ 
         g.start();
         a.exec();
         g.reset();
