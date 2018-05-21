@@ -1,12 +1,60 @@
 #include "ludo_player.h"
 #include <random>
 
-ludo_player::ludo_player():
-    pos_start_of_turn(16),
-    pos_end_of_turn(16),
-    dice_roll(0)
+// ludo_player::ludo_player():
+//     pos_start_of_turn(16),
+//     pos_end_of_turn(16),
+//     dice_roll(0)
+// {
+// }
+
+bool ludo_player::fileExists(const std::string &filename)
 {
+    return access( filename.c_str(), 0 ) == 0;
 }
+
+ludo_player::ludo_player()
+{
+    std::cout << "q-learning" << std::endl;
+    // acc_reward_player1 = 0;
+    // acc_reward_player2 = 0;
+    // acc_reward_player3 = 0;
+    // acc_reward_player4 = 0;
+    if(fileExists("../trainQ.txt")) // Continue from previous
+    {
+        int nrows = 7;
+        int ncols = 13;
+        qLearningTable = Eigen::MatrixXd(nrows,ncols);
+        std::ifstream fin("../trainQ.txt");
+        if (fin.is_open())
+        {
+            for (int row = 0; row < nrows; row++)
+                for (int col = 0; col < ncols; col++)
+                {
+                    float item = 0.0;
+                    fin >> item;
+                    qLearningTable(row, col) = item;
+                }
+            fin.close();
+        }
+    }
+    else
+    {
+        qLearningTable = Eigen::MatrixXd::Zero(7,13);
+        qLearningTable(6,12) = 70;
+        
+        std::ofstream current_table("../trainQ.txt");
+        current_table << qLearningTable << "\n";
+    }
+    update = false;
+    std::cout << "qLearningTable initiliazed!" << std::endl;
+
+}
+
+// void ludo_player::saveQTable(std::vector<std::vector<double>> &qTable, std::string filename)
+// {
+
+// }
 
 int ludo_player::make_decision(){
     if(dice_roll == 6){
