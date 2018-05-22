@@ -57,6 +57,7 @@ int main(int argc, char *argv[]){
     // for (int j = 4; j < 16; j++)
     //     for(int k = 0; k<4; k++)
     //         std::cout << j << "/4 * " << k << " == " << (int)j/4 * k << std::endl;
+    // std::cout << (double)(rand() % 1000) / 1000.0 << std::endl;
 
     for(int i = 0; i < 1; ++i){ 
         g.start();

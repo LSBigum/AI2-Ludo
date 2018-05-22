@@ -12,6 +12,11 @@ class ludo_player : public QObject {
     Q_OBJECT
 private:
     // void saveQTable(std::vector<std::vector<double>> &qTable, std::string filename);
+    double EXPLORE_RATE = 0;
+    double EXPLORE_RATE_DECAY;
+    double DISCOUNT_FACTOR = 0.4;
+    double LEARNING_RATE = 0.7;
+
     Eigen::MatrixXd qLearningTable;
     std::vector<int> pos_start_of_turn;
     std::vector<int> pos_end_of_turn;
@@ -20,9 +25,12 @@ private:
     bool fileExists(const std::string &filename);
     bool update;
     void receiveReward();
+
     std::vector<int> getActions();
     int selectAction(std::vector<std::vector<double>> q_table, std::vector<int> states, std::vector<int> possible_actions);
-    
+
+    int posIfMovingBack = 0; // For checking if the token moved past goal and therefore back in goal stretch
+
 public:
     ludo_player();
     // double acc_reward_player1;
