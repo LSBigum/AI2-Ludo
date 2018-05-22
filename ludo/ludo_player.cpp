@@ -52,29 +52,7 @@ ludo_player::ludo_player():
 
 }
 
-// int ludo_player::isOccupied(int index){ //returns number of people of another color
-//     int number_of_people = 0;
 
-//     if(index != 99){
-//         for(size_t i = 0; i < player_positions.size(); ++i){
-//             if(i < static_cast<size_t>(color)*4 || i >= static_cast<size_t>(color)*4 + 4){        //Disregard own players
-//                 if(player_positions[i] == index){
-//                     ++number_of_people;
-//                 }
-//             }
-//         }
-//     }
-//     return number_of_people;
-// }
-
-// bool ludo_player::isGlobe(int index){
-//     if(index < 52){     //check only the indexes on the board, not in the home streak
-//         if(index % 13 == 0 || (index - 8) % 13 == 0 || isOccupied(index) > 1){  //if more people of the same team stand on the same spot it counts as globe
-//             return true;
-//         }
-//     }
-//     return false;
-// }
 
 // void ludo_player::saveQTable(std::vector<std::vector<double>> &qTable, std::string filename)
 // {
@@ -90,31 +68,29 @@ std::vector<int> ludo_player::getActions()
         int new_pos = start_pos + dice_roll;
         // std::cout << "i: " << i << ", pos: " << new_pos << ", startpos: " << start_pos << ", dice: " << dice_roll << std::endl;
         // Move out of home
-        if (start_pos == -1 && dice_roll == 6) {
+        if (start_pos == -1 && dice_roll == 6) 
+        {
             action = 0;
-        // Check if token is stuck in home or is in goal
-        } else if (start_pos != -1 && start_pos != 99) {
+        } 
+        else if (start_pos != -1 && start_pos != 99) // Check if token is stuck in home or is in goal
+        {
             // Move into goal stretch
             if (new_pos > 50 && new_pos < 56)
                 action = 1;
-
-            // Form blockade
-            for (int j = 0; j < 4; j++) {
-                if (new_pos == pos_start_of_turn[j] && i != j && pos_start_of_turn[j] != 99) {
-                    action = 4;
-                    break;
-                }
-            }
 
             // Move onto same field as an enemy
             bool kill = false;
             bool suicide = false;
 
+            // Star
+            if(new_pos == 5 || new_pos == 11 || new_pos == 18 || new_pos == 24 || new_pos == 31 || new_pos == 37 || new_pos == 44) 
+                action = 5;
+
             for (int j = 4; j < 16; j++) {
                 if (new_pos == pos_start_of_turn[j] && start_pos != -1 && start_pos != 99) {
                     kill = true;
                     // Check if enemy token is on globe (Suicide)
-                    if ((pos_start_of_turn[j] - 8) % 13 == 0 || (pos_start_of_turn[j]) % 13 == 0) {
+                    if ((pos_start_of_turn[j] - 8) % 13 == 0 || (pos_start_of_turn[j]) % 13 == 0) { 
                         suicide = true;
                         kill = false;
                         break;
@@ -122,39 +98,99 @@ std::vector<int> ludo_player::getActions()
                     // Check if enemy has formed a blockade (Suicide)
                     for (int k = 0; k < 4; k++) {
                         int index = int(j/4) * k;
+                        // std::cout << "if " << new_pos << " == " << pos_start_of_turn[index] << " && " << index << " != " << j << std::endl;
                         if (new_pos == pos_start_of_turn[index] && index != j) {
+                            std::cout << "Suicide --------- " << std::endl;
                             suicide = true;
+                            kill = false;
                             break;
                         }
                     }
                 }
             }
 
-            // Protect token (goal stretch or globe)
-            if ((new_pos > 50 && start_pos < 50) ||
-                ((new_pos - 8) % 13 == 0 && new_pos < 52 && suicide == false)) {
-                action = 6;
+            if (suicide) // Suicide
+                action = 9;
+            else if (kill && !suicide) // Kill
+                action = 2;
+            
+            if (new_pos == 56 || new_pos == 50) // Goal (56) and star -> goal (50)
+                action = 3;
+
+            // Form own blockade
+            for (int j = 0; j < 4; j++) 
+            {
+                if (new_pos == pos_start_of_turn[j] && i != j && pos_start_of_turn[j] != 99)
+                {
+                    action = 4;
+                    break;
+                }
             }
 
-            if (suicide) { // Suicide
-                action = 4;
-            } else if (kill && !suicide) { // Kill
-                action = 3;
-            }
-            // Move token
-            if (action == 0 && new_pos > start_pos)
-                action = 2;
+            if ((new_pos - 8) % 13 == 0) // Safe globe
+                action = 6;
+
+            if (new_pos % 13 == 0) // Risky globe
+                action = 7;
+
+            if (action == -1 && new_pos > start_pos) // Neutral
+                action = 8;
         }
         actions.push_back(action);
     }
     
     // for(int i = 0; i < actions.size(); i++)
     // {
-    //     std::cout << "actions: " << actions[i] << std::endl;
+    //     std::cout << "action: " << actions[i] << ", dice roll: " << dice_roll << std::endl;
     // }
+    // std::cout << std::endl;
     
     return actions;
 }
+
+// int ludo_player::selectAction(std::vector<std::vector<double>> q_table,
+//     std::vector<int> states, std::vector<int> possible_actions)
+// {
+//     int best_action = 0;
+//     if (EXPLORE_RATE == 0 || (double)(rand() % 1000) / 1000.0 > EXPLORE_RATE) {
+//         double max_q = -10000;
+//         for (int i = 0; i < 4; i++) {
+//             if (pos_start_of_turn[i] > 55 || (pos_start_of_turn[i] == -1 && dice_roll != 6))
+//                 continue;
+
+//             if (q_table[possible_actions[i]][states[i]] > max_q && possible_actions[i] != 0) {
+//                 max_q = q_table[possible_actions[i]][states[i]];
+//                 best_action = i;
+//             }
+//         }
+//     // Random action
+//     } else {
+//         bool token_out_of_home = false;
+//         for (int i = 0; i < 4; i++) {
+//             if (pos_start_of_turn[i] != -1 && pos_start_of_turn[i] != 99) {
+//                 token_out_of_home = true;
+//                 break;
+//             }
+//         }
+//         while (true) {
+//             best_action = rand() % 4;
+//             if (pos_start_of_turn[best_action] < 56) {
+//                 if (pos_start_of_turn[best_action] != -1 && token_out_of_home) {
+//                     break;
+//                 } else if (!token_out_of_home) {
+//                     break;
+//                 }
+//             }
+//         }
+//     }
+//     // Make sure that best_action is not moving a token in goal
+//     while(pos_start_of_turn[best_action] == 99) {
+//         best_action++;
+//         best_action = best_action % 4;
+//     }
+
+//     return best_action;
+// }
 
 int ludo_player::make_decision(){
     getActions();

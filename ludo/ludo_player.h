@@ -21,8 +21,8 @@ private:
     bool update;
     void receiveReward();
     std::vector<int> getActions();
-    bool isGlobe(int index);
-    int isOccupied(int index);
+    int selectAction(std::vector<std::vector<double>> q_table, std::vector<int> states, std::vector<int> possible_actions);
+    
 public:
     ludo_player();
     // double acc_reward_player1;

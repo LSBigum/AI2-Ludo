@@ -54,10 +54,18 @@ int main(int argc, char *argv[]){
     QObject::connect(&p4,SIGNAL(turn_complete(bool)),              &g, SLOT(turnComplete(bool)));
 
     std::cout << "\n\n\n\n\n\n\n";
-    for(int i = 0; i < 100; ++i){ 
+    // for (int j = 4; j < 16; j++)
+    //     for(int k = 0; k<4; k++)
+    //         std::cout << j << "/4 * " << k << " == " << (int)j/4 * k << std::endl;
+
+    for(int i = 0; i < 1; ++i){ 
         g.start();
         a.exec();
         g.reset();
+
+        while (a.closingDown());
+        g.reset();
+        if(g.wait()){};
     }
 
 

@@ -59,7 +59,7 @@ int game::isOccupied(int index){ //returns number of people of another color
 }
 
 bool game::isGlobe(int index){
-    if(index < 52){     //check only the indexes on the board, not in the home streak
+    if(index < 52){     //check only the indexes on the board, not in the home stretch
         if(index % 13 == 0 || (index - 8) % 13 == 0 || isOccupied(index) > 1){  //if more people of the same team stand on the same spot it counts as globe
             return true;
         }
@@ -248,13 +248,13 @@ void game::turnComplete(bool win){
         // std::cout << "player: " << color << " won" << std::endl;
         players[color]++;
         gameAmount++;
-        std::cout << "\r\e[A\r\e[A\r\e[A\r\e[A\r\e[A\r\e[A"
-                  <<"Stats:\nGames played: " << gameAmount
-                  << "\nPlayer 0: " << players[0] << "\t" << int(players[0] / float(gameAmount) * 100) << "%   "
-                  << "\nPlayer 1: " << players[1] << "\t" << int(players[1] / float(gameAmount) * 100) << "%   "
-                  << "\nPlayer 2: " << players[2] << "\t" << int(players[2] / float(gameAmount) * 100) << "%   "
-                  << "\nPlayer 3: " << players[3] << "\t" << int(players[3] / float(gameAmount) * 100) << "%   "
-                  << std::endl;
+        // std::cout << "\r\e[A\r\e[A\r\e[A\r\e[A\r\e[A\r\e[A"
+        //           <<"Stats:\nGames played: " << gameAmount
+        //           << "\nPlayer 0: " << players[0] << "\t" << int(players[0] / float(gameAmount) * 100) << "%   "
+        //           << "\nPlayer 1: " << players[1] << "\t" << int(players[1] / float(gameAmount) * 100) << "%   "
+        //           << "\nPlayer 2: " << players[2] << "\t" << int(players[2] / float(gameAmount) * 100) << "%   "
+        //           << "\nPlayer 3: " << players[3] << "\t" << int(players[3] / float(gameAmount) * 100) << "%   "
+        //           << std::endl;
         emit declare_winner(color);
     }
 }
