@@ -11,8 +11,8 @@
 class ludo_player : public QObject {
     Q_OBJECT
 private:
-    Eigen::MatrixXd loadQTable(const char *filename);
-    void saveQTable(Eigen::MatrixXd &qTable);
+    std::vector<std::vector<double>> loadQTable(const char *filename);
+    void saveQTable(std::vector<std::vector<double>> &qTable);
     double EXPLORE_RATE = 0;
     double EXPLORE_RATE_DECAY;
     double DISCOUNT_FACTOR = 0.4;
@@ -21,7 +21,7 @@ private:
     // double EXPLORE_RATE = 0.9;
     bool training = false;
 
-    Eigen::MatrixXd qLearningTable;
+    std::vector<std::vector<double>> qLearningTable;
     std::vector<int> pos_start_of_turn;
     std::vector<int> pos_end_of_turn;
     int dice_roll;
@@ -33,8 +33,8 @@ private:
     std::vector<int> currentStates();
 
     std::vector<int> getActions();
-    void getReward(Eigen::MatrixXd &qTable, int action, int state, int decision);
-    int selectAction(Eigen::MatrixXd qTable, std::vector<int> states, std::vector<int> possible_actions);
+    void getReward(std::vector<std::vector<double>> &qTable, int action, int state, int decision);
+    int selectAction(std::vector<std::vector<double>> qTable, std::vector<int> states, std::vector<int> possible_actions);
 
     int posIfMovingBack = 0; // For checking if the token moved past goal and therefore back in goal stretch
 

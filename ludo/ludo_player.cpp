@@ -18,7 +18,7 @@ ludo_player::ludo_player():
     {
         int nrows = 8;
         int ncols = 11;
-        qLearningTable = Eigen::MatrixXd(nrows,ncols);
+        std::vector<std::vector<double>> qLearningTable(nrows,std::vector<double>(ncols));
         std::ifstream fin("../trainQ.txt");
         if (fin.is_open())
         {
@@ -27,7 +27,7 @@ ludo_player::ludo_player():
                 {
                     float item = 0.0;
                     fin >> item;
-                    qLearningTable(row, col) = item;
+                    qLearningTable[row][col] = item;
                 }
             fin.close();
         }
@@ -36,76 +36,87 @@ ludo_player::ludo_player():
     {
         int nrows = 8;
         int ncols = 11;
-        qLearningTable = Eigen::MatrixXd::Zero(nrows,ncols);
-        qLearningTable(0,0) = 70;
-        qLearningTable(7,0) = 70;
+        std::vector<std::vector<double>> qLearningTable(nrows,std::vector<double>(ncols, 0));
+        qLearningTable[0][0] = 70;
+        qLearningTable[7][0] = 70;
         
         std::ofstream current_table("../trainQ.txt");
-        current_table << qLearningTable;
+        // current_table << qLearningTable;
+
+        for (int i = 0; i < qLearningTable.size(); i++)
+        {
+            std::vector<double> tmp = qLearningTable[i];
+            
+            for(int j = 0; j < tmp.size(); j++)
+            {
+                current_table << tmp[j] << " ";
+            }
+            current_table << std::endl;
+        }
     }
     update = false;
     std::cout << "qLearningTable initiliazed!" << std::endl;
 
 }
 
-// Eigen::MatrixXd ludo_player::loadQTable()
+// std::vector<std::vector<double>> ludo_player::loadQTable()
 // {
-//     Eigen::MatrixXd qTable;
+//     std::vector<std::vector<double>> qTable;
 //     std::ifstream input_file("../trainQ.txt");
 //     input_file >> qTable;
 //     input_file.close();
 //     return qTable;
 // }
 
-Eigen::MatrixXd ludo_player::loadQTable(const char *filename)
+std::vector<std::vector<double>> ludo_player::loadQTable(const char *filename)
 {
-    int cols = 0, rows = 0;
-    double buff[MAXBUFSIZE];
+    // int cols = 0, rows = 0;
+    // double buff[MAXBUFSIZE];
 
-    // Read numbers from file into buffer.
-    std::ifstream infile;
-    infile.open(filename);
-    while (! infile.eof())
-        {
-        std::string line;
-        getline(infile, line);
+    // // Read numbers from file into buffer.
+    // std::ifstream infile;
+    // infile.open(filename);
+    // while (! infile.eof())
+    //     {
+    //     std::string line;
+    //     getline(infile, line);
 
-        int temp_cols = 0;
-        std::stringstream stream(line);
-        while(! stream.eof())
-            stream >> buff[cols*rows+temp_cols++];
+    //     int temp_cols = 0;
+    //     std::stringstream stream(line);
+    //     while(! stream.eof())
+    //         stream >> buff[cols*rows+temp_cols++];
 
-        if (temp_cols == 0)
-            continue;
+    //     if (temp_cols == 0)
+    //         continue;
 
-        if (cols == 0)
-            cols = temp_cols;
+    //     if (cols == 0)
+    //         cols = temp_cols;
 
-        rows++;
-        }
+    //     rows++;
+    //     }
 
-    infile.close();
+    // infile.close();
 
-    // rows--;
+    // // rows--;
     
-    // Populate matrix with numbers.
-    Eigen::MatrixXd result(rows,cols);
-    for (int i = 0; i < rows; i++)
-        for (int j = 0; j < cols; j++)
-        {
-            result(i,j) = buff[ cols*i+j ];
-            std::cout << "i: " << i << ", j: " << j << std::endl;
-        }
+    // // Populate matrix with numbers.
+    // std::vector<std::vector<double>> result[rows][cols];
+    // for (int i = 0; i < rows; i++)
+    //     for (int j = 0; j < cols; j++)
+    //     {
+    //         result[i][j] = buff[ cols*i+j ];
+    //         std::cout << "i: " << i << ", j: " << j << std::endl;
+    //     }
 
-    std::cout << result << std::endl;
-    return result;
+    // std::cout << result << std::endl;
+    // return result;
 }
 
-void ludo_player::saveQTable(Eigen::MatrixXd &qTable)
+void ludo_player::saveQTable(std::vector<std::vector<double>> &qTable)
 {
-    std::stringstream ss;
-    std::ofstream outputFile("../trainQ.txt");
-    outputFile << qTable;
+    // std::stringstream ss;
+    // std::ofstream outputFile("../trainQ.txt");
+    // outputFile << qTable;
 }
 
 std::vector<int> ludo_player::currentStates()
@@ -255,7 +266,7 @@ std::vector<int> ludo_player::getActions()
     return actions;
 }
 
-int ludo_player::selectAction(Eigen::MatrixXd qTable,
+int ludo_player::selectAction(std::vector<std::vector<double>> qTable,
     std::vector<int> states, std::vector<int> possible_actions)
 {
     int best_action = 0;
@@ -268,9 +279,9 @@ int ludo_player::selectAction(Eigen::MatrixXd qTable,
             if (pos_start_of_turn[i] > 55 || (pos_start_of_turn[i] == -1 && dice_roll != 6))
                 continue;
 
-            if (qTable( possible_actions[i], states[i] ) > max_q && possible_actions[i] != -1) 
+            if (qTable[possible_actions[i]][states[i]] > max_q && possible_actions[i] != -1) 
             {
-                max_q = qTable(possible_actions[i], states[i]);
+                max_q = qTable[possible_actions[i]][states[i]];
                 best_action = i;
             }
         }
@@ -314,7 +325,7 @@ int ludo_player::selectAction(Eigen::MatrixXd qTable,
     return best_action;
 }
 
-void ludo_player::getReward(Eigen::MatrixXd &qTable,
+void ludo_player::getReward(std::vector<std::vector<double>> &qTable,
     int action, int state, int decision)
 {
     double total_diff = 0;
@@ -395,9 +406,9 @@ void ludo_player::getReward(Eigen::MatrixXd &qTable,
 
     // Update q-table
     if (reward != 0) {
-        qTable(previous_action, previous_state) += LEARNING_RATE *
-            (reward + DISCOUNT_FACTOR * qTable(action, state)
-             - qTable(previous_action, previous_state));
+        qTable[previous_action][previous_state] += LEARNING_RATE *
+            (reward + DISCOUNT_FACTOR * qTable[action][state]
+             - qTable[previous_action][previous_state]);
     }
     previous_state = state;
     previous_action = action;
@@ -419,10 +430,10 @@ int ludo_player::make_decision(){
     // for (int i = 0; i < actions.size(); i++)
     //     std::cout << "actions: " << actions[i] << std::endl;
 
-
+    int nrows = 8;
+    int ncols = 11;
     static bool first_turn = true;
-    static Eigen::MatrixXd qTable(8, 11);
-    qTable.setZero();
+    static std::vector<std::vector<double>> qTable(nrows, std::vector<double>(ncols, 0));
     // std::cout << "action: " << selectAction(qTable, states, actions) << std::endl;
 
     if (first_turn) {
