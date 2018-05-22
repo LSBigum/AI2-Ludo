@@ -11,11 +11,15 @@
 class ludo_player : public QObject {
     Q_OBJECT
 private:
-    // void saveQTable(std::vector<std::vector<double>> &qTable, std::string filename);
+    Eigen::MatrixXd loadQTable(const char *filename);
+    void saveQTable(Eigen::MatrixXd &qTable);
     double EXPLORE_RATE = 0;
     double EXPLORE_RATE_DECAY;
     double DISCOUNT_FACTOR = 0.4;
     double LEARNING_RATE = 0.7;
+    // bool training = true;
+    // double EXPLORE_RATE = 0.9;
+    bool training = false;
 
     Eigen::MatrixXd qLearningTable;
     std::vector<int> pos_start_of_turn;
@@ -29,6 +33,7 @@ private:
     std::vector<int> currentStates();
 
     std::vector<int> getActions();
+    void getReward(Eigen::MatrixXd &qTable, int action, int state, int decision);
     int selectAction(Eigen::MatrixXd qTable, std::vector<int> states, std::vector<int> possible_actions);
 
     int posIfMovingBack = 0; // For checking if the token moved past goal and therefore back in goal stretch
