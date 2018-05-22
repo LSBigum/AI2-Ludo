@@ -26,8 +26,10 @@ private:
     bool update;
     void receiveReward();
 
+    std::vector<int> currentStates();
+
     std::vector<int> getActions();
-    int selectAction(std::vector<std::vector<double>> q_table, std::vector<int> states, std::vector<int> possible_actions);
+    int selectAction(Eigen::MatrixXd qTable, std::vector<int> states, std::vector<int> possible_actions);
 
     int posIfMovingBack = 0; // For checking if the token moved past goal and therefore back in goal stretch
 

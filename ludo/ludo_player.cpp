@@ -1,13 +1,6 @@
 #include "ludo_player.h"
 #include <random>
 
-// ludo_player::ludo_player():
-//     pos_start_of_turn(16),
-//     pos_end_of_turn(16),
-//     dice_roll(0)
-// {
-// }
-
 bool ludo_player::fileExists(const std::string &filename)
 {
     return access( filename.c_str(), 0 ) == 0;
@@ -39,10 +32,10 @@ ludo_player::ludo_player():
     }
     else
     {
-        int nrows = 7;
-        int ncols = 13;
+        int nrows = 8;
+        int ncols = 11;
         qLearningTable = Eigen::MatrixXd::Zero(nrows,ncols);
-        qLearningTable(6,12) = 70;
+        qLearningTable(0,0) = 70;
         
         std::ofstream current_table("../trainQ.txt");
         current_table << qLearningTable;
@@ -58,6 +51,59 @@ ludo_player::ludo_player():
 // {
 
 // }
+
+std::vector<int> ludo_player::currentStates()
+{
+    std::vector<int> states(4, -1);
+
+    for (int i = 0; i < 4; i++) 
+    {
+        int state = -1;
+        int start_pos = pos_start_of_turn[i];
+
+        // Home
+        if (start_pos == -1) 
+            state = 0;
+
+        // Goal stretch
+        if (start_pos > 50 && start_pos < 56)
+            state = 1;
+        
+        // Goal
+        if ((start_pos >= 56 && start_pos < 72) || start_pos == 99)
+            state = 2;
+
+        // Star
+        if (start_pos == 5 || start_pos == 11 || start_pos == 18 || start_pos == 24 || start_pos == 31 || start_pos == 37 || start_pos == 44)
+            state = 3;
+
+        // Safe globe
+        if ((start_pos < 50) && ((start_pos - 8) % 13 == 0 || start_pos == 0))
+            state = 4;
+
+        // Risky globe
+        if (start_pos % 13 == 0 && start_pos > 0)
+            state = 5;
+
+        // Neutral
+        if (state == -1 && start_pos != -1 && start_pos != 99)
+            state = 6;
+
+        // Own block and neutral
+        for (int j = 0; j < 4; j++)
+        {
+            if (state == 6 && start_pos == pos_start_of_turn[j] && i != j && pos_start_of_turn[j] != 99)
+            {
+                state = 7;
+                break;
+            }
+        }
+
+        states[i] = state;
+    }
+
+    return states;
+}
 
 std::vector<int> ludo_player::getActions()
 {
@@ -114,7 +160,7 @@ std::vector<int> ludo_player::getActions()
                         int index = int(j/4) * k;
                         // std::cout << "if " << new_pos << " == " << pos_start_of_turn[index] << " && " << index << " != " << j << std::endl;
                         if (new_pos == pos_start_of_turn[index] && index != j) {
-                            std::cout << "Suicide --------- " << std::endl;
+                            // std::cout << "Suicide --------- " << std::endl;
                             suicide = true;
                             kill = false;
                             break;
@@ -159,44 +205,55 @@ std::vector<int> ludo_player::getActions()
     return actions;
 }
 
-int ludo_player::selectAction(std::vector<std::vector<double>> qTable,
+int ludo_player::selectAction(Eigen::MatrixXd qTable,
     std::vector<int> states, std::vector<int> possible_actions)
 {
     int best_action = 0;
-    std::cout << (double)(rand() % 1000) / 1000.0 << std::endl;
-    if (EXPLORE_RATE == 0 || (double)(rand() % 1000) / 1000.0 > EXPLORE_RATE) {
+    if (EXPLORE_RATE == 0 || (double)(rand() % 1000) / 1000.0 > EXPLORE_RATE) 
+    {
         double max_q = -10000;
-        for (int i = 0; i < 4; i++) {
+        for (int i = 0; i < 4; i++)
+        {
             if (pos_start_of_turn[i] > 55 || (pos_start_of_turn[i] == -1 && dice_roll != 6))
                 continue;
 
-            if (qTable[possible_actions[i]][states[i]] > max_q && possible_actions[i] != 0) {
-                max_q = qTable[possible_actions[i]][states[i]];
+            if (qTable( possible_actions[i], states[i] ) > max_q && possible_actions[i] != 0) 
+            {
+                max_q = qTable(possible_actions[i], states[i]);
                 best_action = i;
             }
         }
     // Random action
-    } else {
+    } 
+    else 
+    {
         bool token_out_of_home = false;
-        for (int i = 0; i < 4; i++) {
-            if (pos_start_of_turn[i] != -1 && pos_start_of_turn[i] != 99) {
+        for (int i = 0; i < 4; i++) 
+        {
+            if (pos_start_of_turn[i] != -1 && pos_start_of_turn[i] != 99) 
+            {
                 token_out_of_home = true;
                 break;
             }
         }
         while (true) {
             best_action = rand() % 4;
-            if (pos_start_of_turn[best_action] < 56) {
-                if (pos_start_of_turn[best_action] != -1 && token_out_of_home) {
+            if (pos_start_of_turn[best_action] < 56) 
+            {
+                if (pos_start_of_turn[best_action] != -1 && token_out_of_home) 
+                {
                     break;
-                } else if (!token_out_of_home) {
+                } 
+                else if (!token_out_of_home) 
+                {
                     break;
                 }
             }
         }
     }
     // Make sure that best_action is not moving a token in goal
-    while(pos_start_of_turn[best_action] == 99) {
+    while(pos_start_of_turn[best_action] == 99)
+    {
         best_action++;
         best_action = best_action % 4;
     }
@@ -205,8 +262,25 @@ int ludo_player::selectAction(std::vector<std::vector<double>> qTable,
 }
 
 int ludo_player::make_decision(){
-    // getActions();
-    selectAction();
+    // selectAction();
+    std::vector<int> states = currentStates();
+    std::vector<int> actions = getActions();
+
+    std::cout << "Dice: " << dice_roll << std::endl;
+    for (int i = 0; i < states.size(); i++)
+        std::cout << "States: " << states[i] << std::endl;
+
+    std::cout << "\n\n";
+
+    // for (int i = 0; i < actions.size(); i++)
+    //     std::cout << "actions: " << actions[i] << std::endl;
+
+
+    static bool first_turn = true;
+    static Eigen::MatrixXd qTable(7, 11);
+    qTable.setZero();
+    // std::cout << "action: " << selectAction(qTable, states, actions) << std::endl;
+
     if(dice_roll == 6){
         for(int i = 0; i < 4; ++i){
             if(pos_start_of_turn[i]<0){
