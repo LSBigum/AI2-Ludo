@@ -53,7 +53,7 @@ int main(int argc, char *argv[]){
     QObject::connect(&g, SIGNAL(player4_end(std::vector<int>)),    &p4,SLOT(post_game_analysis(std::vector<int>)));
     QObject::connect(&p4,SIGNAL(turn_complete(bool)),              &g, SLOT(turnComplete(bool)));
 
-    std::cout << "\n\n\n\n\n\n\n";
+    std::cout << "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n";
     // for (int j = 4; j < 16; j++)
     //     for(int k = 0; k<4; k++)
     //         std::cout << j << "/4 * " << k << " == " << (int)j/4 * k << std::endl;

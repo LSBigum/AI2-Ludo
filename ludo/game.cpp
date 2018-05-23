@@ -248,6 +248,7 @@ void game::turnComplete(bool win){
         // std::cout << "player: " << color << " won" << std::endl;
         players[color]++;
         gameAmount++;
+        std::cout << "\n\n\n\n\n\n\n";
         std::cout << "\r\e[A\r\e[A\r\e[A\r\e[A\r\e[A\r\e[A"
                   <<"Stats:\nGames played: " << gameAmount
                   << "\nPlayer 0: " << players[0] << "\t" << int(players[0] / float(gameAmount) * 100) << "%   "
