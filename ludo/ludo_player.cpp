@@ -1,6 +1,8 @@
 #include "ludo_player.h"
 #include <random>
 
+#define MAXBUFSIZE  ((int) 1e6)
+
 bool ludo_player::fileExists(const std::string &filename)
 {
     return access( filename.c_str(), 0 ) == 0;
@@ -262,12 +264,6 @@ std::vector<int> ludo_player::getActions()
         actions.push_back(action);
     }
     
-    // for(int i = 0; i < actions.size(); i++)
-    // {
-    //     std::cout << "action: " << actions[i] << ", dice roll: " << dice_roll << std::endl;
-    // }
-    // std::cout << std::endl;
-    
     return actions;
 }
 
@@ -281,6 +277,7 @@ int ludo_player::selectAction(Eigen::MatrixXd qTable,
         double max_q = -10000;
         for (int i = 0; i < 4; i++)
         {
+            // If token can't do anything, check next token
             if (pos_start_of_turn[i] > 55 || (pos_start_of_turn[i] == -1 && dice_roll != 6))
                 continue;
 
@@ -310,7 +307,9 @@ int ludo_player::selectAction(Eigen::MatrixXd qTable,
                 break;
             }
         }
-        while (true) {
+        // Choose a token to do a random action with
+        while (true) 
+        {
             best_action = rand() % 4;
             if (pos_start_of_turn[best_action] < 56) 
             {
@@ -414,6 +413,9 @@ void ludo_player::getReward(Eigen::MatrixXd &qTable,
     if (EXPLORE_RATE < 0)
         EXPLORE_RATE = 0;
 
+    if (this->training) {
+        getReward(qTable, possible_actions[decision], states[decision], decision);
+    }
 
     // Update q-table
     if (reward != 0) {

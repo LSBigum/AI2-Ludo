@@ -20,6 +20,9 @@ private:
     double EXPLORE_RATE_DECAY;
     double DISCOUNT_FACTOR = 0.4;
     double LEARNING_RATE = 0.7;
+    // bool training = true;
+    // double EXPLORE_RATE = 0.9;
+    bool training = false;
 
     Eigen::MatrixXd qTable;
     std::vector<int> pos_start_of_turn;
@@ -34,6 +37,7 @@ private:
     void getReward(Eigen::MatrixXd &qTable, int action, int state, int decision);
 
     std::vector<int> getActions();
+    void getReward(Eigen::MatrixXd &qTable, int action, int state, int decision);
     int selectAction(Eigen::MatrixXd qTable, std::vector<int> states, std::vector<int> possible_actions);
 
     int posIfMovingBack = 0; // For checking if the token moved past goal and therefore back in goal stretch
