@@ -59,7 +59,7 @@ int main(int argc, char *argv[]){
     //         std::cout << j << "/4 * " << k << " == " << (int)j/4 * k << std::endl;
     // std::cout << (double)(rand() % 1000) / 1000.0 << std::endl;
 
-    for(int i = 0; i < 100; ++i){ 
+    for(int i = 0; i < 1000; ++i){ 
         g.start();
         a.exec();
         g.reset();

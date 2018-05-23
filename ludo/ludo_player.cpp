@@ -274,7 +274,7 @@ std::vector<int> ludo_player::getActions()
 int ludo_player::selectAction(Eigen::MatrixXd qTable,
     std::vector<int> states, std::vector<int> actions)
 {
-    std::cout << "test1" << std::endl;
+    // std::cout << "test1" << std::endl;
     int best_action = -1;
     if (EXPLORE_RATE == 0 || (double)(rand() % 1000) / 1000.0 > EXPLORE_RATE) 
     {
@@ -328,8 +328,9 @@ int ludo_player::selectAction(Eigen::MatrixXd qTable,
     // Make sure that best_action is not moving a token in goal
     while(pos_start_of_turn[best_action] == 99)
     {
-        best_action++;
-        best_action = best_action % 4;
+        // best_action++;
+        // best_action = best_action % 4;
+        best_action = -1;
     }
     // std::cout << "Best: " << best_action << std::endl;
     return best_action;
