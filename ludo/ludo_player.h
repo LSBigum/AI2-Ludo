@@ -11,13 +11,17 @@
 class ludo_player : public QObject {
     Q_OBJECT
 private:
-    // void saveQTable(std::vector<std::vector<double>> &qTable, std::string filename);
+    void saveQTable(Eigen::MatrixXd &qTable);
+    Eigen::MatrixXd loadQTable();
+    // bool training = true;
+    // double EXPLORE_RATE = 0.9;
+    bool training = false;
     double EXPLORE_RATE = 0;
     double EXPLORE_RATE_DECAY;
     double DISCOUNT_FACTOR = 0.4;
     double LEARNING_RATE = 0.7;
 
-    Eigen::MatrixXd qLearningTable;
+    Eigen::MatrixXd qTable;
     std::vector<int> pos_start_of_turn;
     std::vector<int> pos_end_of_turn;
     int dice_roll;
@@ -27,6 +31,7 @@ private:
     void receiveReward();
 
     std::vector<int> currentStates();
+    void getReward(Eigen::MatrixXd &qTable, int action, int state, int decision);
 
     std::vector<int> getActions();
     int selectAction(Eigen::MatrixXd qTable, std::vector<int> states, std::vector<int> possible_actions);

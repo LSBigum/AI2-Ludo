@@ -14,9 +14,9 @@ ludo_player::ludo_player():
     std::cout << "q-learning" << std::endl;
     if(fileExists("../trainQ.txt")) // Continue from previous
     {
-        int nrows = 7;
-        int ncols = 13;
-        qLearningTable = Eigen::MatrixXd(nrows,ncols);
+        int nrows = 8;
+        int ncols = 11;
+        qTable = Eigen::MatrixXd(nrows,ncols);
         std::ifstream fin("../trainQ.txt");
         if (fin.is_open())
         {
@@ -25,7 +25,7 @@ ludo_player::ludo_player():
                 {
                     float item = 0.0;
                     fin >> item;
-                    qLearningTable(row, col) = item;
+                    qTable(row, col) = item;
                 }
             fin.close();
         }
@@ -34,23 +34,89 @@ ludo_player::ludo_player():
     {
         int nrows = 8;
         int ncols = 11;
-        qLearningTable = Eigen::MatrixXd::Zero(nrows,ncols);
-        qLearningTable(0,0) = 70;
+        qTable = Eigen::MatrixXd::Zero(nrows,ncols);
+        qTable(0,0) = 70;
+        qTable(1,1) = 5;
+        qTable(1,3) = 10;
+        qTable(1,10) = 5;
+        qTable(3,1) = 90;
+        qTable(3,2) = 80;
+        qTable(3,3) = 100;
+        qTable(3,4) = 50;
+        qTable(3,5) = 60;
+        qTable(3,6) = 50;
+        qTable(3,7) = 20;
+        qTable(3,8) = 5;
+        qTable(3,9) = -150;
+        qTable(4,1) = 90;
+        qTable(4,2) = 80;
+        qTable(4,4) = 50;
+        qTable(4,5) = 60;
+        qTable(4,7) = 20;
+        qTable(4,8) = 5;
+        qTable(4,9) = -150;
+        qTable(5,2) = 80;
+        qTable(5,4) = 60;
+        qTable(5,5) = 60;
+        qTable(5,8) = 5;
+        qTable(5,9) = -150;
+        qTable(6,1) = 100;
+        qTable(6,2) = 80;
+        qTable(6,4) = 50;
+        qTable(6,5) = 60;
+        qTable(6,6) = 50;
+        qTable(6,7) = 20;
+        qTable(6,8) = 5;
+        qTable(6,9) = -150;
+        qTable(7,1) = 90;
+        qTable(7,2) = 80;
+        qTable(7,3) = 100;
+        qTable(7,4) = 50;
+        qTable(7,5) = 60;
+        qTable(7,6) = 50;
+        qTable(7,7) = 20;
+        qTable(7,8) = 5;
+        qTable(7,9) = -150;
+
+
+        
         
         std::ofstream current_table("../trainQ.txt");
-        current_table << qLearningTable;
+        current_table << qTable;
     }
     update = false;
-    std::cout << "qLearningTable initiliazed!" << std::endl;
+    std::cout << "qTable initiliazed!" << std::endl;
 
 }
 
+Eigen::MatrixXd ludo_player::loadQTable()
+{
+    if(fileExists("../trainQ.txt")) // Continue from previous
+    {
+        int nrows = 8;
+        int ncols = 11;
+        qTable = Eigen::MatrixXd(nrows,ncols);
+        std::ifstream fin("../trainQ.txt");
+        if (fin.is_open())
+        {
+            for (int row = 0; row < nrows; row++)
+                for (int col = 0; col < ncols; col++)
+                {
+                    float item = 0.0;
+                    fin >> item;
+                    qTable(row, col) = item;
+                }
+            fin.close();
+        }
+    }
+    return qTable;
+}
 
-
-// void ludo_player::saveQTable(std::vector<std::vector<double>> &qTable, std::string filename)
-// {
-
-// }
+void ludo_player::saveQTable(Eigen::MatrixXd &qTable)
+{
+    std::ofstream current_table("trainQ.txt");
+    current_table << qTable << std::endl;
+}
 
 std::vector<int> ludo_player::currentStates()
 {
@@ -206,9 +272,10 @@ std::vector<int> ludo_player::getActions()
 }
 
 int ludo_player::selectAction(Eigen::MatrixXd qTable,
-    std::vector<int> states, std::vector<int> possible_actions)
+    std::vector<int> states, std::vector<int> actions)
 {
-    int best_action = 0;
+    std::cout << "test1" << std::endl;
+    int best_action = -1;
     if (EXPLORE_RATE == 0 || (double)(rand() % 1000) / 1000.0 > EXPLORE_RATE) 
     {
         double max_q = -10000;
@@ -217,16 +284,23 @@ int ludo_player::selectAction(Eigen::MatrixXd qTable,
             if (pos_start_of_turn[i] > 55 || (pos_start_of_turn[i] == -1 && dice_roll != 6))
                 continue;
 
-            if (qTable( possible_actions[i], states[i] ) > max_q && possible_actions[i] != 0) 
+            if (qTable( states[i], actions[i] ) > max_q && actions[i] != -1) 
             {
-                max_q = qTable(possible_actions[i], states[i]);
+            
+                // std::cout << "I got in!" << std::endl;
+                // std::cout << "State: " << states[i] << ", actions: " << actions[i] << std::endl;
+                max_q = qTable(states[i], actions[i]);
                 best_action = i;
+                // std::cout << "maxq " << max_q << std::endl;
             }
         }
+        // std::cout << "Dice: " << dice_roll << std::endl;
+        // std::cout << "best action " << best_action << std::endl;
     // Random action
     } 
     else 
     {
+        // std::cout << "test2" << std::endl;
         bool token_out_of_home = false;
         for (int i = 0; i < 4; i++) 
         {
@@ -257,56 +331,172 @@ int ludo_player::selectAction(Eigen::MatrixXd qTable,
         best_action++;
         best_action = best_action % 4;
     }
-
+    // std::cout << "Best: " << best_action << std::endl;
     return best_action;
 }
 
-int ludo_player::make_decision(){
-    // selectAction();
-    std::vector<int> states = currentStates();
-    std::vector<int> actions = getActions();
+void ludo_player::getReward(Eigen::MatrixXd &qTable,
+    int action, int state, int decision)
+{
+    double total_diff = 0;
+    static int previous_state = 0;
+    static int previous_action = 0;
+    static int games_played = 0;
+    
+    double reward = 0;
 
-    std::cout << "Dice: " << dice_roll << std::endl;
-    for (int i = 0; i < states.size(); i++)
-        std::cout << "States: " << states[i] << std::endl;
+    // Move out of home
+    if (previous_action == 0)
+        reward += 70;
 
-    std::cout << "\n\n";
-
-    // for (int i = 0; i < actions.size(); i++)
-    //     std::cout << "actions: " << actions[i] << std::endl;
-
-
-    static bool first_turn = true;
-    static Eigen::MatrixXd qTable(7, 11);
-    qTable.setZero();
-    // std::cout << "action: " << selectAction(qTable, states, actions) << std::endl;
-
-    if(dice_roll == 6){
-        for(int i = 0; i < 4; ++i){
-            if(pos_start_of_turn[i]<0){
-                return i;
+    // Move piece closest to home
+    if (previous_action != 0 && previous_action != 1 && previous_action != 4) {
+        bool closest = true;
+        for (int i = 0; i < 4; i++) {
+            if (pos_end_of_turn[decision] < pos_end_of_turn[i] &&
+                decision != i && pos_end_of_turn[i] != 99) {
+                    closest = false;
             }
         }
-        for(int i = 0; i < 4; ++i){
-            if(pos_start_of_turn[i]>=0 && pos_start_of_turn[i] != 99){
-                return i;
-            }
-        }
+        if (closest && pos_end_of_turn[decision] < 51)
+            reward += 0.1;
+    }
+    // Kill
+    if (previous_action == 3)
+        reward += 0.15;
+
+    // Form Blockade
+    if (previous_action == 5)
+        reward += 0.05;
+
+    // Protect token
+    if (previous_action == 6)
+        reward += 0.2;
+
+    // Move into goal
+    if (previous_action == 7)
+        reward += 0.25;
+
+    // Suicide
+    if (previous_action == 4)
+        reward -= 0.8;
+
+    bool game_won = true;
+    for (int i = 0; i < 4; i++) {
+        // Winning the game
+        if(pos_end_of_turn[i] != 99)
+            game_won = false;
+
+        // Getting a token knocked home
+        if (pos_start_of_turn[i] == -1 && pos_end_of_turn[i] != -1)
+            reward -= 0.25;
+    }
+
+    if (game_won) {
+        if (EXPLORE_RATE > 0)
+            EXPLORE_RATE -= EXPLORE_RATE_DECAY;
+        games_played++;
+        reward += 1;
     } else {
-        for(int i = 0; i < 4; ++i){
-            if(pos_start_of_turn[i]>=0 && pos_start_of_turn[i] != 99){
-                return i;
-            }
-        }
-        for(int i = 0; i < 4; ++i){ //maybe they are all locked in
-            if(pos_start_of_turn[i]<0){
-                return i;
+        // Losing the game
+        for (int i = 4; i < 16; i++) {
+            if(pos_end_of_turn[i] == 99 && pos_start_of_turn[i] == -1) {
+                if (EXPLORE_RATE > 0)
+                    EXPLORE_RATE -= EXPLORE_RATE_DECAY;
+                games_played++;
+                reward -= 1;
+                break;
             }
         }
     }
-    return -1;
 
-    std::vector<int> possible_actions = getActions();
+    if (EXPLORE_RATE < 0)
+        EXPLORE_RATE = 0;
+
+
+    // Update q-table
+    if (reward != 0) {
+        qTable(previous_action, previous_state) += LEARNING_RATE *
+            (reward + DISCOUNT_FACTOR * qTable(action, state)
+             - qTable(previous_action, previous_state));
+    }
+    previous_state = state;
+    previous_action = action;
+    // static bool game_saved = false;
+    // if (games_played == iterations - 1 && !game_saved) 
+    {
+        
+        saveQTable(qTable);
+        // std::cout << "test2" << std::endl;
+        // game_saved = true;
+    }
+}
+
+int ludo_player::make_decision(){
+    // std::cout << "Dice make decision: " << dice_roll << std::endl;
+    // for (int i = 0; i < states.size(); i++)
+    //     std::cout << "States: " << states[i] << std::endl;
+
+    // std::cout << "\n\n";
+
+    // for (int i = 0; i < actions.size(); i++)
+    //     std::cout << "actions: " << actions[i] << std::endl;
+    static bool first_turn = true;
+    static Eigen::MatrixXd qTable(8, 11);
+    qTable.setZero();
+
+    // if (first_turn) {
+    //     for (int i = 0; i < 4; i++)
+    //         pos_end_of_turn[i] = -1;
+
+    //     if (!this->training) {
+    //         qTable = loadQTable();
+    //     }
+    //     first_turn = false;
+    // }
+    // std::cout << "Before: \n" << qTable << std::endl;
+    qTable = loadQTable();
+    // std::cout << "After: \n" << qTable << std::endl;
+    // std::cout << "Dice: " << dice_roll << std::endl;
+    // std::cout << "action: " << selectAction(qTable, states, actions) << std::endl;
+    std::vector<int> states = currentStates();
+    std::vector<int> actions = getActions();
+    int decision = selectAction(qTable, states, actions);
+
+    if (this->training) {
+        getReward(qTable, actions[decision], states[decision], decision);
+    }
+
+    // std::cout << "Decision " << decision << std::endl;
+    // int decision = 1;
+    return decision;
+
+    // if(dice_roll == 6){
+    //     for(int i = 0; i < 4; ++i){
+    //         if(pos_start_of_turn[i]<0){
+    //             return i;
+    //         }
+    //     }
+    //     for(int i = 0; i < 4; ++i){
+    //         if(pos_start_of_turn[i]>=0 && pos_start_of_turn[i] != 99){
+    //             return i;
+    //         }
+    //     }
+    // } else {
+    //     for(int i = 0; i < 4; ++i){
+    //         if(pos_start_of_turn[i]>=0 && pos_start_of_turn[i] != 99){
+    //             return i;
+    //         }
+    //     }
+    //     for(int i = 0; i < 4; ++i){ //maybe they are all locked in
+    //         if(pos_start_of_turn[i]<0){
+    //             return i;
+    //         }
+    //     }
+    // }
+    // return -1;
+
+    // std::vector<int> possible_actions = getActions();
 
 
 
