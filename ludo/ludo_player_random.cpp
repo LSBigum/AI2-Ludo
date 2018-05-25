@@ -10,6 +10,7 @@ ludo_player_random::ludo_player_random():
 }
 
 int ludo_player_random::make_decision(){
+    static int moves = 0;
     std::vector<int> valid_moves;
     if(dice_roll == 6){
         for(int i = 0; i < 4; ++i){

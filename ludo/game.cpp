@@ -241,20 +241,19 @@ std::vector<int> game::relativePosition(){
 
 void game::turnComplete(bool win){
     static int gameAmount = 0;
-    static std::vector<int> players(4, 0);
+    static std::vector<double> players(4, 0);
     game_complete = win;
     turn_complete = true;
     if(game_complete){
-        // std::cout << "player: " << color << " won" << std::endl;
         players[color]++;
         gameAmount++;
         std::cout << "\n\n\n\n\n\n\n";
         std::cout << "\r\e[A\r\e[A\r\e[A\r\e[A\r\e[A\r\e[A"
                   <<"Stats:\nGames played: " << gameAmount
-                  << "\nPlayer 0: " << players[0] << "\t" << int(players[0] / float(gameAmount) * 100) << "%   "
-                  << "\nPlayer 1: " << players[1] << "\t" << int(players[1] / float(gameAmount) * 100) << "%   "
-                  << "\nPlayer 2: " << players[2] << "\t" << int(players[2] / float(gameAmount) * 100) << "%   "
-                  << "\nPlayer 3: " << players[3] << "\t" << int(players[3] / float(gameAmount) * 100) << "%   "
+                  << "\nPlayer 0: " << players[0] << "\t" << double(players[0] / float(gameAmount) * 100) << "%   "
+                  << "\nPlayer 1: " << players[1] << "\t" << double(players[1] / float(gameAmount) * 100) << "%   "
+                  << "\nPlayer 2: " << players[2] << "\t" << double(players[2] / float(gameAmount) * 100) << "%   "
+                  << "\nPlayer 3: " << players[3] << "\t" << double(players[3] / float(gameAmount) * 100) << "%   "
                   << std::endl;
         emit declare_winner(color);
     }

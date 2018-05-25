@@ -39,6 +39,9 @@
         "cwctype": "cpp",
         "core": "cpp",
         "*.ipp": "cpp",
-        "dense": "cpp"
+        "dense": "cpp",
+        "sstream": "cpp",
+        "string": "cpp",
+        "qobject": "cpp"
     }
 }
